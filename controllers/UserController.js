@@ -18,27 +18,13 @@ class UserController {
         document.getElementById('box-user-update').style.display = 'block';
     }
 
-    getUserStorage() {
-        let users = [];
-        if(localStorage.getItem('users')) {
-            users = JSON.parse(localStorage.getItem('users'));
-        }
-        return users;
-    }
-
     selectAll() {
-        let users = this.getUserStorage();
+        let users = User.getUserStorage();
         users.forEach(dataUser => {
             let user = new User();
             user.loadFromJSON(dataUser);
             this.addLine(user);
         });
-    }
-
-    insert(data) {
-        let users = this.getUserStorage();
-        users.push(data);
-        localStorage.setItem("users", JSON.stringify(users));
     }
 
     addLine(dataUser) {
@@ -73,6 +59,9 @@ class UserController {
     addEventsTr(tr) {
         tr.querySelector(".btn-delete").addEventListener("click", e => {
             if (confirm("Deseja realmente excluir?")) {
+                let user = new User();
+                user.loadFromJSON(JSON.parse(tr.dataset.user));
+                user.remove();
                 tr.remove();
                 this.updateCount();
             }
@@ -180,6 +169,7 @@ class UserController {
                 }
                 let user = new User();
                 user.loadFromJSON(result);
+                user.save();
                 tr = this.getTr(user, tr);
                 this.updateCount();
                 this.formUpdateEl.reset();
@@ -201,7 +191,7 @@ class UserController {
             if (values) {
                 this.getPhoto(this.formEl).then((content) => {
                     values.photo = content;
-                    this.insert(values);
+                    values.save();
                     this.addLine(values);
                     this.formEl.reset();
                     btn.disabled = false;
